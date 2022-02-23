@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+<link rel="stylesheet" href="./style/style.css">
+<title>Bubbka</title>
+</head>
+<body>
+
+	<div class="background d-flex justify-content-center align-items-center">
+		<div id="card" class="card col-12 col-lg-10 text-white bg-primary">
+			<div class="card-header">
+				<h1 id="domanda"></h1>
+			</div>
+			
+			<div id="alert" class="alert " role="alert"></div>
+
+			<div id="risposte" class="card-body d-flex flex-column">
+			</div>
+		</div>
+	</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.21.4/axios.min.js"></script>
+<script>
+n = 0;
+card = document.getElementById('card');
+alert = document.getElementById('alert');
+url = 'http://192.168.1.61/php/jsonEncode.php';
+quiz = [];
+
+// AJAX CALL
+axios.get(url)
+.then(response => {
+	// handle success
+	//console.log(response.data);
+	response.data.forEach(element => {
+		quiz.push(element);
+	});
+	question(n);
+	//console.log(quiz);
+})
+.catch(error => {
+	// handle error
+	console.log(error);
+});
+
+
+
+function question(k){
+	document.getElementById('domanda').innerHTML = quiz[k].question;
+	
+	l_risposte = quiz[k].risposte.length;
+	risposte = '';
+	for(i=0;i<l_risposte;i++){
+		risposte+='<label id="box-risposta" class="d-flex flex-row align-items-center" for="r'+i+'"><input type="radio" id="r'+i+'" class="radio risposta mx-3" value="'+(i+1)+'" name="risposta" placeholder=""/><p class="card-text" id="risposta'+i+'">'+quiz[k].risposte[i]+'</p></label>';
+	}
+
+	document.getElementById('risposte').innerHTML = risposte;
+
+	risposte = document.getElementsByClassName('risposta');
+	for(i=0;i<l_risposte;i++){
+		risposte[i].addEventListener('click', function(e){
+			//console.log(this.value + ' = ' + quiz[k].solution);
+			if(this.value == quiz[k].solution) {
+				card.classList.add('bg-success'); 
+				card.classList.add('blink-1'); 
+				card.classList.remove('bg-danger');
+				alert.classList.add("alert-success");
+				alert.classList.remove("alert-danger");
+				alert.style.display = "block";
+				alert.innerHTML = "Giustoooo!!!";
+				
+				setTimeout(nextQuestion, 1000);
+			} else {
+				card.classList.add('bg-danger');
+				card.classList.remove('bg-primary');
+				card.classList.remove('bg-success');
+				alert.classList.add("alert-danger");
+				alert.classList.remove("alert-success");
+				alert.style.display = "block";
+				alert.innerHTML = "Sbagliato...";
+				card.classList.add('shake-horizontal');
+
+				setTimeout(function() {
+					card.classList.remove('bg-danger');
+					card.classList.add('bg-primary');
+					alert.classList.remove("alert-danger");
+					card.classList.remove('shake-horizontal');
+					alert.style.display = "none";
+				}, 500);
+			}
+		});
+	}
+}
+
+function nextQuestion() {
+	alert.classList.remove("alert-success");
+	card.classList.remove('blink-1'); 
+	alert.style.display = "none";
+	n++;
+	question(n);
+	card.classList.add('bg-primary'); 
+	card.classList.remove('bg-success');
+}
+
+</script>
+</body>
+</html>
